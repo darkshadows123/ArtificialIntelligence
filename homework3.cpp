@@ -18,8 +18,8 @@ struct et
 
 struct s_table
 {
-	vector<int> positive;
-	vector<int> negative;
+    vector<int> positive;
+    vector<int> negative;
 };
 
 
@@ -28,7 +28,23 @@ struct atom {
   string val;
 };
 bool operator< ( atom a, atom b ) { return std::make_pair(a.type,a.val) < std::make_pair(b.type,b.val) ; }
-	 
+     
+
+void split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss;
+    ss.str(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+}
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
+}
+
 // A utility function to check if 'c'
 // is an operator
 bool isOperator(char c)
@@ -39,7 +55,7 @@ bool isOperator(char c)
         return true;
     return false;
 }
-	 
+     
 // Utility function to do inorder traversal
 void inorder(et *t, string &s)
 {
@@ -102,7 +118,7 @@ et* constructTree(string postfix)
         else // operator
         {
             t = newNode(postfix[i]);
- 			if (postfix[i] == '~') {
+            if (postfix[i] == '~') {
 
             // Pop two top nodes
             t1 = st.top(); // Store top
@@ -110,7 +126,7 @@ et* constructTree(string postfix)
  
             //  make them children
             t->right = t1;
- 			} else {
+            } else {
             // Pop two top nodes
             t1 = st.top(); // Store top
             st.pop();      // Remove top
@@ -120,7 +136,7 @@ et* constructTree(string postfix)
             //  make them children
             t->right = t1;
             t->left = t2;
- 			}
+            }
             // Add this subexpression to stack
             st.push(t);
         }
@@ -172,55 +188,55 @@ et* DriveInNegation(et* node)
     }
     else
     {
-    	//cout << "asdd" << endl;
+        //cout << "asdd" << endl;
         return newNode('~', NULL, node);
     }
 }
 
 et* convertToCNF(et * root) {
-	// cout << "root value ==== " << root->value << endl; 
-	// if (root->left)
-	// cout << "root left value ==== " << root->left->value << endl;
-	// if (root->right)
-	// cout << "root right value ==== " << root->right->value << endl;
-	if (IsLeaf(root))
-		return newNode(root->value);
+    // cout << "root value ==== " << root->value << endl; 
+    // if (root->left)
+    // cout << "root left value ==== " << root->left->value << endl;
+    // if (root->right)
+    // cout << "root right value ==== " << root->right->value << endl;
+    if (IsLeaf(root))
+        return newNode(root->value);
     if (root->value == '~')
     {
         if (IsLeaf(root->right))
         // ￢A
         {
-        	// cout << "~A" << endl;
+            // cout << "~A" << endl;
             return newNode(root);
         }
         else
         // ￢(...)
         {
-        	// cout << "~(...)" << endl;
+            // cout << "~(...)" << endl;
             et* expr = DriveInNegation(root->right);
             return convertToCNF(expr);
         }
     }
 
-	// convert children first
-	et *cnfLeft = NULL, *cnfRight = NULL;
-	if (root->left  != NULL) {
-		cnfLeft  = convertToCNF(root->left);
-	}
-	if (root->right != NULL) {
-		cnfRight = convertToCNF(root->right);
-	}
-	if (root->value == '&') {
-		return newNode('&',cnfLeft,cnfRight);
-	}
+    // convert children first
+    et *cnfLeft = NULL, *cnfRight = NULL;
+    if (root->left  != NULL) {
+        cnfLeft  = convertToCNF(root->left);
+    }
+    if (root->right != NULL) {
+        cnfRight = convertToCNF(root->right);
+    }
+    if (root->value == '&') {
+        return newNode('&',cnfLeft,cnfRight);
+    }
     if (root->value == '#')
     {
 
-	// cout << "root value ==== " << root->value << endl; 
-	// if (root->left)
-	// cout << "root left value ==== " << root->left->value << endl;
-	// if (root->right)
-	// cout << "root right value ==== " << root->right->value << endl;
+    // cout << "root value ==== " << root->value << endl; 
+    // if (root->left)
+    // cout << "root left value ==== " << root->left->value << endl;
+    // if (root->right)
+    // cout << "root right value ==== " << root->right->value << endl;
         // cout << "A=>B" << endl;
         et* impLeft = DriveInNegation(root->left);
         et* impRight = root->right;
@@ -392,16 +408,16 @@ string InfixToPostfix(string expression)
 
 
 string convertToOriginal(string converted, vector<string> helper) {
-	string ans = "";
-	for (int i = 0; i < converted.length(); ++i)
-	{
-		if (!IsOperator(converted[i])) {
-			ans = ans + helper[converted[i] - '0'];
-		} else {
-			ans = ans + converted[i];
-		}
-	}
-	return ans;
+    string ans = "";
+    for (int i = 0; i < converted.length(); ++i)
+    {
+        if (!IsOperator(converted[i])) {
+            ans = ans + helper[converted[i] - '0'];
+        } else {
+            ans = ans + converted[i];
+        }
+    }
+    return ans;
 }
 
 string convertToSimple(string original, vector < vector<string> >& storeIntermediate) {
@@ -442,21 +458,6 @@ string convertToSimple(string original, vector < vector<string> >& storeIntermed
 
 
 
-void split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss;
-    ss.str(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-}
-
-std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    split(s, delim, elems);
-    return elems;
-}
-
 
 void doTableBasedIndexing( map < string, struct s_table> &table, string s, int ind) {
 	std::vector<string> orSplit = split(s, '|');
@@ -484,78 +485,77 @@ void doTableBasedIndexing( map < string, struct s_table> &table, string s, int i
     }
 }
 
-bool isEqual(list <struct atom> x, list <struct atom> y) {
-  list <struct atom>::iterator it1 = x.begin();
-  list <struct atom>::iterator it2 = y.begin();
-  while(it1 != x.end() && it2 != x.end() && (*it1).val == (*it2).val) {
+map<struct atom, struct atom> unify(list<struct atom> atoms, list <struct atom> atoms1) {
+  map <struct atom, struct atom> theta;
+  list <struct atom>:: iterator it1 = atoms.begin();
+  list <struct atom>:: iterator it2 = atoms1.begin();
+  while (!atoms.empty() && !atoms1.empty()) {
+    struct atom x = *it1;
+    struct atom y = *it2;
     it1++;
     it2++;
-  }
-  if (it1 == x.end() && it2 == y.end()) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-map<struct atom, struct atom> unify(struct atom x, struct atom y, map<struct atom, struct atom> &theta, bool &failure);
-
-map<struct atom, struct atom> unifyVar(struct atom var, struct atom x,
-    map<struct atom, struct atom> &theta, bool failure) {
-
-  if (theta.find(var) != theta.end()) {
-    // if {var/val} E theta then return UNIFY(val, x, theta)
-    return unify(theta[var], x, theta, failure);
-  } else if (theta.find(x) != theta.end()) {
-    // else if {x/val} E theta then return UNIFY(var, val, theta)
-    return unify(var, theta[x], theta, failure);
-  } else {
-    // else return add {var/x} to theta
-    theta[var] = x;
-    return theta;
-  }
-}
-
-
-map<struct atom, struct atom> unify(struct atom x, struct atom y, map<struct atom, struct atom> &theta, bool &failure) {
-    if (failure) {
-      return theta; 
-    } else if (x.type == "VARIABLE") {
-      return unifyVar(x, y, theta, failure);
-    } else if (y.type == "VARIABLE") {
-      return unifyVar(y, x, theta, failure);
-    } else if (x.val == y.val) {
-      return theta;
-    } else {
-      failure = true;
-      return theta;
+    atoms.pop_front();
+    atoms1.pop_front();
+    if (x.val != y.val) {
+        if (x.type == "VARIABLE") {
+          list <struct atom>:: iterator temp_it1 = atoms.begin();
+          list <struct atom>:: iterator temp_it2 = atoms1.begin();
+          while(temp_it1 != atoms.end()) {
+            if ((*temp_it1).val == x.val) {
+              (*temp_it1).val = y.val;
+              (*temp_it1).type = y.type;
+            }
+            temp_it1++;
+          }
+          while(temp_it2 != atoms1.end()) {
+            if ((*temp_it2).val == x.val) {
+              (*temp_it2).val = y.val;
+              (*temp_it2).type = y.type;
+            }
+            temp_it2++;
+          }
+          map<struct atom, struct atom>::iterator theta_it = theta.begin();
+          while(theta_it != theta.end()) {
+            if ((*theta_it).second.val == x.val) {
+              (*theta_it).second.val = y.val;
+              (*theta_it).second.type = y.type;
+             }
+             theta_it++;
+          }
+          theta[x] = y;
+        } else if (y.type == "VARIABLE") {
+          list <struct atom>:: iterator temp_it1 = atoms.begin();
+          list <struct atom>:: iterator temp_it2 = atoms1.begin();
+          while(temp_it1 != atoms.end()) {
+            if ((*temp_it1).val == y.val) {
+              (*temp_it1).val = x.val;
+              (*temp_it1).type = x.type;
+            }
+            temp_it1++;
+          }
+          while(temp_it2 != atoms1.end()) {
+            if ((*temp_it2).val == y.val) {
+              (*temp_it2).val = x.val;
+              (*temp_it2).type = x.type;
+            }
+            temp_it2++;
+          }
+          map<struct atom, struct atom>::iterator theta_it = theta.begin();
+          while(theta_it != theta.end()) {
+            if ((*theta_it).second.val == y.val) {
+              (*theta_it).second.val = x.val;
+              (*theta_it).second.type = x.type;
+             }
+             theta_it++;
+          }
+          theta[y] = x;
+        }
     }
-}
-
-
-map<struct atom, struct atom> unify(list <struct atom> x, list <struct atom> y, map<struct atom, struct atom> &theta, bool &failure) {
-  cout << "asdasdsdasdas" << endl;
-  if (failure) {
-    return theta;
-  } else if (x.size() != y.size()) {
-    failure = true;
-    return theta;
-  } else if (x.size() == 0 && y.size() == 0) {
-    return theta;
-  } else if (isEqual(x,y)) {
-    cout << "asdsad";
-    return theta;
-  } else if (x.size() == 1 && y.size() == 1) {
-    return unify(x.front(), y.front(), theta, failure);
-  } else {
-    struct atom st1 = x.front();
-    struct atom st2 = y.front();
-    x.pop_front();
-    y.pop_front();
-    theta = unify(st1, st2, theta, failure); 
-    return unify(x, y, theta, failure);
   }
+
+  return theta;
 }
+
 
 
 list <struct atom> atomize(string s) {
