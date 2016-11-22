@@ -704,8 +704,8 @@ void dfs(string query, vector<string> knowledgeBase, map<string, struct s_table>
     cout << "query === " << query << endl;
     string clause1 = query;
     vector <string> cl1_split = split(clause1,'|');
-    if (cl1_split.size() > maxLen)
-        return;
+    // if (cl1_split.size() > maxLen)
+    //     return;
     for (int i = 0; i < cl1_split.size(); ++i)
     {
         bool isCl1Positive = true;
@@ -810,34 +810,47 @@ bool validTheta(map <struct atom, struct atom> theta) {
 
   return true;
 }
-
+bool isFact(vector <string> cl_split)  {
+    if (cl_split.size() > 1)
+        return false;
+    vector <string> s_split = split(cl_split[0], '(');
+    s_split = split(s_split[1],')');
+    s_split = split(s_split[0],',');
+    for (int i = 0; i < s_split.size(); ++i)
+    {
+        if (argType[s_split[i]] == "VARIABLE")
+            return false;
+    }
+  return true;
+}
 void getAllClauses(string clause1, string clause2, vector <string>& clauses) {
     vector <string> cl1_split = split(clause1,'|');
     vector <string> cl2_split = split(clause2,'|');
-    
-    for (int i = 0; i < cl1_split.size(); ++i) {
-        bool isCl1Positive = true;
-        string cl1_predicate = getPredicate(cl1_split[i], isCl1Positive);
-        for (int j = 0; j < cl2_split.size(); ++j) {
-            bool isCl2Positive = true;
-            string cl2_predicate = getPredicate(cl2_split[j], isCl2Positive);
-            if (cl1_predicate == cl2_predicate && isCl1Positive != isCl2Positive) {
-                bool failure = false;
-                map <struct atom, struct atom> theta = unify(atomize(cl1_split[i]), atomize(cl2_split[j]), failure);
-                if (theta.empty() && failure) {
-                    continue;
+    if (isFact(cl1_split) || isFact(cl2_split)) {
+        for (int i = 0; i < cl1_split.size(); ++i) {
+            bool isCl1Positive = true;
+            string cl1_predicate = getPredicate(cl1_split[i], isCl1Positive);
+            for (int j = 0; j < cl2_split.size(); ++j) {
+                bool isCl2Positive = true;
+                string cl2_predicate = getPredicate(cl2_split[j], isCl2Positive);
+                if (cl1_predicate == cl2_predicate && isCl1Positive != isCl2Positive) {
+                    bool failure = false;
+                    map <struct atom, struct atom> theta = unify(atomize(cl1_split[i]), atomize(cl2_split[j]), failure);
+                    if (theta.empty() && failure) {
+                        continue;
+                    }
+                    // if (!validTheta(theta))
+                    //     continue;
+                    string newClause = unifyAndGenerateNextquery(clause1, clause2, theta, cl2_split[j]);
+                    if (newClause == "") {
+                        cout << "EMPTY " << clause1 << " " << clause2 <<endl;
+                    }
+                    vector <string> nc_split = split(newClause, '|');
+                    int len = nc_split.size();
+                    if (len > maxLen)
+                        continue;
+                    clauses.push_back(newClause);
                 }
-                if (!validTheta(theta))
-                    continue;
-                string newClause = unifyAndGenerateNextquery(clause1, clause2, theta, cl2_split[j]);
-                if (newClause == "") {
-                    cout << "EMPTY " << clause1 << " " << clause2 <<endl;
-                }
-                vector <string> nc_split = split(newClause, '|');
-                int len = nc_split.size();
-                if (len > maxLen)
-                    continue;
-                clauses.push_back(newClause);
             }
         }
     }
@@ -845,7 +858,10 @@ void getAllClauses(string clause1, string clause2, vector <string>& clauses) {
 
 void resolution (vector <string> knowledgeBase, bool& found) {
     found = false;
+    int while_count =  0;
     while (true) {
+        cout << "while_count = " << while_count << endl;
+        while_count++;
         int newCount = 0;
         vector <string> newClauses;
         for (int i = 0; i < knowledgeBase.size(); ++i) {
@@ -936,8 +952,8 @@ int main(int argc, char const *argv[])
     std::vector<string> knowledgeBase;
     for (int i = 0; i < in_size; ++i)
     {
-    	et* root = constructTree(postfix[i]);
-    	//cout << "asda" << endl;
+        et* root = constructTree(postfix[i]);
+        //cout << "asda" << endl;
         //cout << postfix[i] << endl;
         //inorder(root);
         et* root_cnf = convertToCNF(root);
@@ -996,13 +1012,13 @@ int main(int argc, char const *argv[])
     {
         visited.clear();
         knowledgeBase.push_back(queries[i]);
-        //for (int j = 0; j < knowledgeBase.size(); ++j)
-        //    hashMapKB[knowledgeBase[j]] = true;
+        for (int j = 0; j < knowledgeBase.size(); ++j)
+            hashMapKB[knowledgeBase[j]] = true;
         //doTableBasedIndexing(table, knowledgeBase[knowledgeBase.size() - 1], knowledgeBase.size() - 1);
-
+        standarizeVariables(knowledgeBase[knowledgeBase.size() - 1], knowledgeBase.size() - 1);
         bool found = false;
-        //resolution (knowledgeBase, found);
-        dfs (queries[i], knowledgeBase, table, found, 0);
+        resolution (knowledgeBase, found);
+        //dfs (queries[i], knowledgeBase, table, found, 0);
         ans.push_back(found);
         knowledgeBase.pop_back();
         hashMapKB.clear();
