@@ -699,11 +699,7 @@ int maxLen;
 void dfs(string query, vector<string> knowledgeBase, map<string, struct s_table> table, bool &found, int count) {
     if (found == true)
         return;
-    if (visited[query] == true) {
-        return;
-    }
     cout << endl;
-    visited[query] = true;
     cout << "-------------------------------dfs number << " << count << " starts here---------------------------------------------------------" << endl;
     cout << "query === " << query << endl;
     string clause1 = query;
@@ -731,6 +727,10 @@ void dfs(string query, vector<string> knowledgeBase, map<string, struct s_table>
                     // check whether two predicates can be unified or not
                     if (cl2_predicate == cl1_predicate && isCl1Positive != isCl2Positive) {
                         cout << "in positive unifying " << clause1 << " " << clause2 << endl;
+                        
+                        if (visited[clause1 + clause2]) {
+                            continue;
+                        }
                         bool failure = false;
                         map <struct atom, struct atom> theta = unify(atomize(cl1_split[i]), atomize(cl2_split[k]), failure);
                         if (theta.empty() && failure) {
@@ -744,7 +744,10 @@ void dfs(string query, vector<string> knowledgeBase, map<string, struct s_table>
                             found = true;
                             return;
                         } else {
+
+                            visited[clause1 + clause2] = true;
                             dfs(nextQuery, knowledgeBase, table,found, count + 1);
+                            visited[clause1 + clause2] = false;
                         } 
                     }
                 }
@@ -768,6 +771,9 @@ void dfs(string query, vector<string> knowledgeBase, map<string, struct s_table>
                     if (cl2_predicate == cl1_predicate && isCl1Positive != isCl2Positive) {
                         cout << "in negative unifying " << clause1 << " " << clause2 << endl;
                         bool failure = false;
+                        if (visited[clause1 + clause2]) {
+                            continue;
+                        }
                         map <struct atom, struct atom> theta = unify(atomize(cl1_split[i]), atomize(cl2_split[k]), failure);
                         if (theta.empty() && failure) {
                             continue;
@@ -782,7 +788,9 @@ void dfs(string query, vector<string> knowledgeBase, map<string, struct s_table>
                             found = true;
                             return;
                         } else {
+                            visited[clause1 + clause2] = true;
                             dfs(nextQuery, knowledgeBase, table,found, count + 1);
+                            visited[clause1 + clause2] = false;
                         } 
                     }
                 }
@@ -850,6 +858,7 @@ void resolution (vector <string> knowledgeBase, bool& found) {
         }
         for (int k = 0; k < newClauses.size(); ++k) {
             if (newClauses[k] == "") {
+                cout << "EMPTY()" << endl;
                 found = true;
                 return;
             }
@@ -982,21 +991,26 @@ int main(int argc, char const *argv[])
         // {
         //     cout << it->first << " " << it->second << endl;
         // }
+    std::vector<bool> ans;
     for (int i = 0; i < queries.size(); ++i)
     {
         visited.clear();
         knowledgeBase.push_back(queries[i]);
-        for (int j = 0; j < knowledgeBase.size(); ++j)
-            hashMapKB[knowledgeBase[j]] = true;
+        //for (int j = 0; j < knowledgeBase.size(); ++j)
+        //    hashMapKB[knowledgeBase[j]] = true;
         //doTableBasedIndexing(table, knowledgeBase[knowledgeBase.size() - 1], knowledgeBase.size() - 1);
 
         bool found = false;
-        resolution (knowledgeBase, found);
-        cout << found << endl;
-        break;
+        //resolution (knowledgeBase, found);
+        dfs (queries[i], knowledgeBase, table, found, 0);
+        ans.push_back(found);
         knowledgeBase.pop_back();
         hashMapKB.clear();
         //break;
+    }
+    for (int i = 0; i < ans.size(); ++i)
+    {
+        cout << ans[i] << endl;
     }
     return 0;
 }
