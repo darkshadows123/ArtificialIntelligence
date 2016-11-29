@@ -12,7 +12,7 @@ using namespace std;
 
 struct et
 {
-    char value;
+    string value;
     et* left, *right;
 };
 
@@ -52,8 +52,7 @@ std::vector<std::string> split(const std::string &s, char delim) {
 bool isOperator(char c)
 {
     if (c == '~' || c == '|' ||
-            c == '#' || c == '&' ||
-            c == '$')
+            c == '#' || c == '&')
         return true;
     return false;
 }
@@ -66,14 +65,14 @@ void inorder(et *t, string &s)
         printf("( ");
         inorder(t->left, s);
         s = s + t->value;
-        printf("%c", t->value);
+        cout << t->value;
         inorder(t->right, s);
         printf(")");
     }
 }
  
 // A utility function to create a new node
-et* newNode(char v)
+et* newNode(string v)
 {
     et *temp = new et;
     temp->left = temp->right = NULL;
@@ -82,7 +81,7 @@ et* newNode(char v)
 };
 
 // A utility function to create a new node
-et* newNode(char v, et* left, et* right)
+et* newNode(string v, et* left, et* right)
 {
     et *temp = new et;
     temp->left = left;
@@ -106,7 +105,7 @@ et* constructTree(string postfix)
 {
     stack<et *> st;
     et *t, *t1, *t2;
- 
+    string s;
     // Traverse through every character of
     // input expression
     for (int i=0; i<postfix.length(); i++)
@@ -114,12 +113,18 @@ et* constructTree(string postfix)
         // If operand, simply push into stack
         if (!isOperator(postfix[i]))
         {
-            t = newNode(postfix[i]);
+            s = "";
+            while (postfix[i] != '$') {
+                s = s + postfix[i];
+                i++;
+            }
+            s = s + '$';
+            t = newNode(s);
             st.push(t);
         }
         else // operator
         {
-            t = newNode(postfix[i]);
+            t = newNode(string(1,postfix[i]));
             if (postfix[i] == '~') {
 
             // Pop two top nodes
@@ -159,15 +164,15 @@ bool IsLeaf(et* node)
 
 bool IsAtomic(et* node)
 {
-    return (IsLeaf(node) || (node->value == '~' && IsLeaf(node->right)));
+    return (IsLeaf(node) || (node->value[0] == '~' && IsLeaf(node->right)));
 }
 
 et* DriveInNegation(et* node)
 {
-    if (node->value == '~')
+    if (node->value[0] == '~')
     {
         //NOTE: there may be many consecutive NOT, for example: ￢￢￢￢A
-        if (node->right->value == '~')
+        if (node->right->value[0] == '~')
         {
             return DriveInNegation(node->right->right);
         }
@@ -176,22 +181,22 @@ et* DriveInNegation(et* node)
             return newNode(node->right);
         }
     }
-    else if (node->value == '&')
+    else if (node->value[0] == '&')
     {
-        return newNode('|', DriveInNegation(node->left), DriveInNegation(node->right));
+        return newNode("|", DriveInNegation(node->left), DriveInNegation(node->right));
     }
-    else if (node->value == '|')
+    else if (node->value[0] == '|')
     {
-        return newNode('&', DriveInNegation(node->left), DriveInNegation(node->right));
+        return newNode("&", DriveInNegation(node->left), DriveInNegation(node->right));
     }
-    else if (node->value == '#')
+    else if (node->value[0] == '#')
     {
-        return newNode('&', node->left, DriveInNegation(node->right));
+        return newNode("&", node->left, DriveInNegation(node->right));
     }
     else
     {
         //cout << "asdd" << endl;
-        return newNode('~', NULL, node);
+        return newNode("~", NULL, node);
     }
 }
 
@@ -203,7 +208,7 @@ et* convertToCNF(et * root) {
     // cout << "root right value ==== " << root->right->value << endl;
     if (IsLeaf(root))
         return newNode(root->value);
-    if (root->value == '~')
+    if (root->value[0] == '~')
     {
         if (IsLeaf(root->right))
         // ￢A
@@ -228,10 +233,10 @@ et* convertToCNF(et * root) {
     if (root->right != NULL) {
         cnfRight = convertToCNF(root->right);
     }
-    if (root->value == '&') {
-        return newNode('&',cnfLeft,cnfRight);
+    if (root->value[0] == '&') {
+        return newNode("&",cnfLeft,cnfRight);
     }
-    if (root->value == '#')
+    if (root->value[0] == '#')
     {
 
     // cout << "root value ==== " << root->value << endl; 
@@ -242,51 +247,51 @@ et* convertToCNF(et * root) {
         // cout << "A=>B" << endl;
         et* impLeft = DriveInNegation(root->left);
         et* impRight = root->right;
-        et* temp = newNode('|', impLeft, impRight);
+        et* temp = newNode("|", impLeft, impRight);
         return convertToCNF(temp);
     }
-    if (root->value == '|') {
-        if (( cnfLeft == NULL || IsAtomic(cnfLeft) || cnfLeft->value == '|')
-            && (cnfRight == NULL || IsAtomic(cnfRight) || cnfRight->value == '|'))
+    if (root->value[0] == '|') {
+        if (( cnfLeft == NULL || IsAtomic(cnfLeft) || cnfLeft->value[0] == '|')
+            && (cnfRight == NULL || IsAtomic(cnfRight) || cnfRight->value[0] == '|'))
         //   +
         // +   +
         {
-            return newNode('|',cnfLeft,cnfRight);
+            return newNode("|",cnfLeft,cnfRight);
         }
-        else if ((cnfLeft != NULL && cnfLeft->value == '&')
-                && (cnfRight == NULL || IsAtomic(cnfRight) || cnfRight->value == '|'))
+        else if ((cnfLeft != NULL && cnfLeft->value[0] == '&')
+                && (cnfRight == NULL || IsAtomic(cnfRight) || cnfRight->value[0] == '|'))
         //   +
         // *   +
         {
-            et* newLeft = newNode('|', cnfLeft->left, cnfRight);
-            et* newRight = newNode('|', cnfLeft->right, cnfRight);
+            et* newLeft = newNode("|", cnfLeft->left, cnfRight);
+            et* newRight = newNode("|", cnfLeft->right, cnfRight);
 
-            return newNode('&', convertToCNF(newLeft), convertToCNF(newRight));
+            return newNode("&", convertToCNF(newLeft), convertToCNF(newRight));
         }
-        else if ((cnfRight != NULL && cnfRight->value == '&')
-                && (cnfLeft == NULL || IsAtomic(cnfLeft) || cnfLeft->value == '|'))
+        else if ((cnfRight != NULL && cnfRight->value[0] == '&')
+                && (cnfLeft == NULL || IsAtomic(cnfLeft) || cnfLeft->value[0] == '|'))
         //   +
         // +   *
         {
-            et* newLeft = newNode('|', cnfLeft, cnfRight->right);
-            et* newRight = newNode('|', cnfLeft, cnfRight->left);
+            et* newLeft = newNode("|", cnfLeft, cnfRight->right);
+            et* newRight = newNode("|", cnfLeft, cnfRight->left);
 
-            return newNode('&', convertToCNF(newLeft), convertToCNF(newRight));
+            return newNode("&", convertToCNF(newLeft), convertToCNF(newRight));
         }
-        else if ((cnfLeft != NULL && cnfLeft->value == '&')
-                && (cnfRight != NULL && cnfRight->value == '&'))
+        else if ((cnfLeft != NULL && cnfLeft->value[0] == '&')
+                && (cnfRight != NULL && cnfRight->value[0] == '&'))
         //   +
         // *   *
         {
-            et* newLeft = newNode('&',
-                newNode('|', cnfLeft->left, cnfRight->left),
-                newNode('|', cnfLeft->right, cnfRight->left));
+            et* newLeft = newNode("&",
+                newNode("|", cnfLeft->left, cnfRight->left),
+                newNode("|", cnfLeft->right, cnfRight->left));
 
-            et* newRight = newNode('&',
-                newNode('|', cnfLeft->left, cnfRight->right),
-                newNode('|', cnfLeft->right, cnfRight->right));
+            et* newRight = newNode("&",
+                newNode("|", cnfLeft->left, cnfRight->right),
+                newNode("|", cnfLeft->right, cnfRight->right));
 
-            return newNode('&', convertToCNF(newLeft), convertToCNF(newRight));
+            return newNode("&", convertToCNF(newLeft), convertToCNF(newRight));
         }
     }
     cout << "error!!!!!!!!!!!!!" << endl;
@@ -307,24 +312,18 @@ bool IsOperand(char C)
 // Function to verify whether a character is operator symbol or not. 
 bool IsOperator(char C)
 {
-    if(C == '#' || C == '&' || C == '|' || C == '~' || C== '$')
+    if(C == '#' || C == '&' || C == '|' || C == '~')
         return true;
 
     return false;
 }
 
-// Function to verify whether an operator is right associative or not. 
-int IsRightAssociative(char op)
-{
-    if(op == '$') return true;
-    return false;
-}
 
 // Function to get weight of an operator. An operator with higher weight will have higher precedence. 
-int GetOperatorWeight(char op)
+int GetOperatorWeight(string op)
 {
     int weight = -1; 
-    switch(op)
+    switch(op[0])
     {
     case '#':
         weight = 1;
@@ -333,14 +332,12 @@ int GetOperatorWeight(char op)
         weight = 2;
     case '~':
         weight = 3;
-    case '$':
-        weight = 4;
     }
     return weight;
 }
 
 // Function to perform an operation and return output. 
-int HasHigherPrecedence(char op1, char op2)
+int HasHigherPrecedence(string op1, string op2)
 {
     int op1Weight = GetOperatorWeight(op1);
     int op2Weight = GetOperatorWeight(op2);
@@ -348,10 +345,8 @@ int HasHigherPrecedence(char op1, char op2)
     // If operators have equal precedence, return true if they are left associative. 
     // return false, if right associative. 
     // if operator is left-associative, left one should be given priority. 
-    if(op1Weight == op2Weight)
-    {
-        if(IsRightAssociative(op1)) return false;
-        else return true;
+    if(op1Weight == op2Weight) {
+        return true;
     }
     return op1Weight > op2Weight ?  true: false;
 }
@@ -361,7 +356,7 @@ int HasHigherPrecedence(char op1, char op2)
 string InfixToPostfix(string expression)
 {
     // Declaring a Stack from Standard template library in C++. 
-    stack<char> S;
+    stack<string> S;
     string postfix = ""; // Initialize postfix as empty string.
     for(int i = 0;i< expression.length();i++) {
 
@@ -372,27 +367,32 @@ string InfixToPostfix(string expression)
         // If character is operator, pop two elements from stack, perform operation and push the result back. 
         else if(IsOperator(expression[i])) 
         {
-            while(!S.empty() && S.top() != '(' && HasHigherPrecedence(S.top(),expression[i]))
+            while(!S.empty() && S.top() != "(" && HasHigherPrecedence(S.top(),string(1,expression[i])))
             {
                 postfix+= S.top();
                 S.pop();
             }
-            S.push(expression[i]);
+            S.push(string(1,expression[i]));
         }
         // Else if character is an operand
         else if(IsOperand(expression[i]))
         {
-            postfix +=expression[i];
+            while (IsOperand(expression[i])) {
+                postfix +=expression[i];
+                i++;
+            }
+            i--;
+            postfix = postfix + '$';
         }
 
         else if (expression[i] == '(') 
         {
-            S.push(expression[i]);
+            S.push(string(1,expression[i]));
         }
 
         else if(expression[i] == ')') 
         {
-            while(!S.empty() && S.top() !=  '(') {
+            while(!S.empty() && S.top() !=  "(") {
                 postfix += S.top();
                 S.pop();
             }
@@ -411,10 +411,16 @@ string InfixToPostfix(string expression)
 
 string convertToOriginal(string converted, vector<string> helper) {
     string ans = "";
+    string temp = "";
     for (int i = 0; i < converted.length(); ++i)
     {
         if (!IsOperator(converted[i])) {
-            ans = ans + helper[converted[i] - '0'];
+            temp = "";
+            while (converted[i] != '$') {
+                temp = temp + converted[i];
+                i++;
+            }
+            ans = ans + helper[atoi(temp.c_str())];
         } else {
             ans = ans + converted[i];
         }
@@ -921,13 +927,14 @@ int main(int argc, char const *argv[])
     {
         et* root = constructTree(postfix[i]);
         //cout << "asda" << endl;
-        //cout << postfix[i] << endl;
-        //inorder(root);
+        cout << postfix[i] << endl;
+        string s1;
+        inorder(root, s1);
         et* root_cnf = convertToCNF(root);
  //       cout << "converted to cnf" << endl;
         string s;
         inorder(root_cnf, s);
-        cout << endl;
+        cout << "here" << endl;
         s = convertToOriginal(s, storeIntermediate[i]);
       //  cout << s << endl;
         vector <string> temp = split(s,'&');
