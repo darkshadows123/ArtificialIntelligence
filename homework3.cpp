@@ -62,12 +62,12 @@ void inorder(et *t, string &s)
 {
     if(t)
     {
-        printf("( ");
+        //printf("( ");
         inorder(t->left, s);
         s = s + t->value;
-        cout << t->value;
+        //cout << t->value;
         inorder(t->right, s);
-        printf(")");
+        //printf(")");
     }
 }
  
@@ -294,7 +294,7 @@ et* convertToCNF(et * root) {
             return newNode("&", convertToCNF(newLeft), convertToCNF(newRight));
         }
     }
-    cout << "error!!!!!!!!!!!!!" << endl;
+    //cout << "error!!!!!!!!!!!!!" << endl;
     return NULL;
 
 }
@@ -783,9 +783,9 @@ void getAllClauses(string clause1, string clause2, vector <string>& clauses) {
                  if (newClause == "FALSE") {
                     continue;
                  }
-                 if (newClause == "") {
-                     cout << "EMPTY " << clause1 << " " << clause2 <<endl;
-                 }
+                 // if (newClause == "") {
+                 //     cout << "EMPTY " << clause1 << " " << clause2 <<endl;
+                 // }
                 clauses.push_back(newClause);
             }
         }
@@ -795,7 +795,7 @@ void getAllClauses(string clause1, string clause2, vector <string>& clauses) {
 
 void resolution (vector <string> knowledgeBase, map <string, struct s_table> table, string query, bool& found) {
     found = false;
-    cout << "query ================================ "<< query<<endl;
+    //cout << "query ================================ "<< query<<endl;
     knowledgeBase.push_back(query);
     standarizeVariables(knowledgeBase[knowledgeBase.size() - 1], knowledgeBase.size() - 1);
     doTableBasedIndexing(table, knowledgeBase[knowledgeBase.size() - 1], knowledgeBase.size() - 1);
@@ -803,7 +803,7 @@ void resolution (vector <string> knowledgeBase, map <string, struct s_table> tab
     std::map<string, bool> m_visited;
     int kbLen = knowledgeBase.size() - 1;
     while (true) {
-        cout << "while_count = " << while_count << endl;
+        //cout << "while_count = " << while_count << endl;
         while_count++;
         int newCount = 0;
         vector <string> newClauses;
@@ -846,7 +846,7 @@ void resolution (vector <string> knowledgeBase, map <string, struct s_table> tab
                 return;
             }
             if (hashMapKB.find(newClauses[k]) == hashMapKB.end() ) {
-                cout << "newClauses ================ " << newClauses[k] << endl;
+                //cout << "newClauses ================ " << newClauses[k] << endl;
                 hashMapKB[newClauses[k]] = true;
                 newCount++;
                 knowledgeBase.push_back(newClauses[k]);
@@ -857,7 +857,7 @@ void resolution (vector <string> knowledgeBase, map <string, struct s_table> tab
             found = false;
             return;
         }
-        cout << newCount << endl;
+       // cout << newCount << endl;
     }
     // cout << "============================ new kb ==================================" << endl;
     // for (int i = 0; i < knowledgeBase.size(); ++i)
@@ -874,6 +874,8 @@ string removeSpace (string s) {
 
 int main(int argc, char const *argv[])
 {
+    freopen("input.txt","r",stdin);
+    freopen("output.txt","w",stdout);
     int in_size;
     vector<string> input;
     // for A(X) => B(Y) stores A(x) as 0 and B(Y) as 1
@@ -927,14 +929,14 @@ int main(int argc, char const *argv[])
     {
         et* root = constructTree(postfix[i]);
         //cout << "asda" << endl;
-        cout << postfix[i] << endl;
+       // cout << postfix[i] << endl;
         string s1;
         inorder(root, s1);
         et* root_cnf = convertToCNF(root);
  //       cout << "converted to cnf" << endl;
         string s;
         inorder(root_cnf, s);
-        cout << "here" << endl;
+        //cout << "here" << endl;
         s = convertToOriginal(s, storeIntermediate[i]);
       //  cout << s << endl;
         vector <string> temp = split(s,'&');
@@ -950,7 +952,7 @@ int main(int argc, char const *argv[])
     //cout << "+++++++++++++++++++ knowledgeBase -----------------------" << endl;
     for (int i = 0; i < knowledgeBase.size(); ++i) {
         standarizeVariables(knowledgeBase[i], i);
-        cout << knowledgeBase[i] << endl;
+        //cout << knowledgeBase[i] << endl;
         vector <string> temp1  = split(knowledgeBase[i], '|');
         //cout << temp1.size() << " " << maxLen << endl;
         doTableBasedIndexing(table, knowledgeBase[i], i);
